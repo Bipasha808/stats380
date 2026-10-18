@@ -1,9 +1,15 @@
-# declare function
-getGrowth <- function(sector_name) {
-  # extract and sort sector data
-  sector_subset <- gdp[gdp$sector == sector_name, ]
-  sector_subset <- sector_subset[order(sector_subset$quarter), ]
+# declare function with optional year range
+getGrowth <- function(sector_name, startYear = NULL, endYear = NULL) {
+  # convert sector index to sector name when needed
+  if (is.numeric(sector_name)) {
+    target_sector <- levels(gdp$sector)[sector_name]
+  } else {
+    target_sector <- sector_name
+  }
 
+  # extract and sort sector data
+  sector_subset <- gdp[gdp$sector == target_sector, ]
+  sector_subset <- sector_subset[order(sector_subset$quarter), ]
   sector_amount <- sector_subset$amount
   sector_quarter <- sector_subset$quarter
 
@@ -11,10 +17,23 @@ getGrowth <- function(sector_name) {
   growth_rates <- diff(sector_amount) / head(sector_amount, -1) * 100
   aligned_quarters <- tail(sector_quarter, -1)
 
-  # store and return quarters and growth rates
+  # store quarters and growth rates
   result_df <- data.frame(
     quarter = aligned_quarters,
     rate = growth_rates
   )
+
+  # filter results by year when requested
+  quarter_years <- as.numeric(substr(as.character(result_df$quarter), 1, 4))
+  if (!is.null(startYear)) {
+    result_df <- result_df[quarter_years >= startYear, ]
+    quarter_years <- quarter_years[quarter_years >= startYear]
+  }
+  if (!is.null(endYear)) {
+    quarter_years <- as.numeric(substr(as.character(result_df$quarter), 1, 4))
+    result_df <- result_df[quarter_years <= endYear, ]
+  }
+
+  rownames(result_df) <- NULL
   return(result_df)
 }
