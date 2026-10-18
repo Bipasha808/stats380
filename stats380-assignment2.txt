@@ -1,0 +1,20 @@
+# declare function
+getGrowth <- function(sector_name) {
+  # extract and sort sector data
+  sector_subset <- gdp[gdp$sector == sector_name, ]
+  sector_subset <- sector_subset[order(sector_subset$quarter), ]
+
+  sector_amount <- sector_subset$amount
+  sector_quarter <- sector_subset$quarter
+
+  # calculate quarterly growth rates
+  growth_rates <- diff(sector_amount) / head(sector_amount, -1) * 100
+  aligned_quarters <- tail(sector_quarter, -1)
+
+  # store and return quarters and growth rates
+  result_df <- data.frame(
+    quarter = aligned_quarters,
+    rate = growth_rates
+  )
+  return(result_df)
+}
