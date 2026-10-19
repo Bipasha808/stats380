@@ -1,10 +1,37 @@
-# declare function with optional year range
+# calculate quarterly GDP growth for a sector
+# assumes gdp exists and has sector, quarter, and amount columns
+# accepts a sector name or a sector factor index, with optional year limits
 getGrowth <- function(sector_name, startYear = NULL, endYear = NULL) {
-  # convert sector index to sector name when needed
-  if (is.numeric(sector_name)) {
+  # check that the data is available
+  if (!exists("gdp", envir = .GlobalEnv)) {
+    stop("The global 'gdp' data frame does not exist.")
+  }
+
+  # check and resolve sector name or index
+  if (is.character(sector_name) && length(sector_name) == 1 && !is.na(sector_name)) {
+    if (!sector_name %in% levels(gdp$sector)) {
+      stop("The specified sector does not exist.")
+    }
+    target_sector <- sector_name
+  } else if (is.numeric(sector_name) && length(sector_name) == 1 &&
+             is.finite(sector_name) && sector_name == floor(sector_name) &&
+             sector_name >= 1 && sector_name <= length(levels(gdp$sector))) {
     target_sector <- levels(gdp$sector)[sector_name]
   } else {
-    target_sector <- sector_name
+    stop("sector_name must be a valid sector name or factor index.")
+  }
+
+  # check optional year values
+  if (!is.null(startYear) && (!is.numeric(startYear) || length(startYear) != 1 ||
+                              !is.finite(startYear))) {
+    stop("startYear must be a single finite number.")
+  }
+  if (!is.null(endYear) && (!is.numeric(endYear) || length(endYear) != 1 ||
+                            !is.finite(endYear))) {
+    stop("endYear must be a single finite number.")
+  }
+  if (!is.null(startYear) && !is.null(endYear) && startYear > endYear) {
+    stop("startYear must not be later than endYear.")
   }
 
   # extract and sort sector data
@@ -23,7 +50,7 @@ getGrowth <- function(sector_name, startYear = NULL, endYear = NULL) {
     rate = growth_rates
   )
 
-  # filter results by year when requested
+  # filter results by year
   quarter_years <- as.numeric(substr(as.character(result_df$quarter), 1, 4))
   if (!is.null(startYear)) {
     result_df <- result_df[quarter_years >= startYear, ]
