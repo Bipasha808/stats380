@@ -221,7 +221,7 @@ plotGrowths <- function(sector_name, startYear = NULL, endYear = NULL,
 
 # Plot multiple sectors
 plotSectors <- function(sectors, startYear = NULL, endYear = NULL,
-                        df = gdp) {
+                        df = gdp, col = c("lightblue", "red")) {
 
   # Check the number of sectors
   if (length(sectors) == 0) {
@@ -237,6 +237,6 @@ plotSectors <- function(sectors, startYear = NULL, endYear = NULL,
 
   # Plot each sector
   for (sector_name in sectors) {
-    plotGrowths(sector_name, startYear, endYear, df)
+    plotGrowths(sector_name, startYear, endYear, df, col)
   }
 }
