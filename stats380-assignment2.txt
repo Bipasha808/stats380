@@ -218,3 +218,25 @@ plotGrowths <- function(sector_name, startYear = NULL, endYear = NULL,
          lwd = c(NA, 2),
          bty = "n")
 }
+
+# Plot multiple sectors
+plotSectors <- function(sectors, startYear = NULL, endYear = NULL,
+                        df = gdp) {
+
+  # Check the number of sectors
+  if (length(sectors) == 0) {
+    stop("At least one sector must be provided")
+  }
+
+  # Set up the plot layout
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
+
+  n <- length(sectors)
+  par(mfrow = c(ceiling(n / 2), 2))
+
+  # Plot each sector
+  for (sector_name in sectors) {
+    plotGrowths(sector_name, startYear, endYear, df)
+  }
+}
