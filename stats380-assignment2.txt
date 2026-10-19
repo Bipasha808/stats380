@@ -149,3 +149,22 @@ getAnnualGrowth <- function(sector_name, startYear = NULL, endYear = NULL, df = 
   return(result_df)
 }
 
+# combine quarterly and annual growth rates
+getGrowths <- function(sector_name, startYear = NULL, endYear = NULL, df = gdp) {
+  # calculate quarterly and annual growth rates
+  q_df <- getGrowth(df = df, sector_name = sector_name,
+                    startYear = startYear, endYear = endYear)
+  a_df <- getAnnualGrowth(df = df, sector_name = sector_name,
+                          startYear = startYear, endYear = endYear)
+
+  # match annual rates to the quarterly results
+  annual_rates <- a_df$annualrate[match(q_df$quarter, a_df$quarter)]
+  result_df <- data.frame(
+    quarter = q_df$quarter,
+    quarterlyRate = q_df$rate,
+    annualRate = annual_rates
+  )
+
+  rownames(result_df) <- NULL
+  return(result_df)
+}
