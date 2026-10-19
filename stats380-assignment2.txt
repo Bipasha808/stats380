@@ -1,22 +1,20 @@
-# calculate quarterly GDP growth for a sector
-# assumes gdp exists and has sector, quarter, and amount columns
-# accepts a sector name or a sector factor index, with optional year limits
-getGrowth <- function(sector_name, startYear = NULL, endYear = NULL) {
-  # check that the data is available
-  if (!exists("gdp", envir = .GlobalEnv)) {
-    stop("The global 'gdp' data frame does not exist.")
+# calculate quarterly GDP growth without using gdp directly in the function body
+getGrowth <- function(sector_name, startYear = NULL, endYear = NULL, df = gdp) {
+  # check data format
+  if (!isGDPData(df)) {
+    stop("The provided data frame does not match the expected GDP data structure.")
   }
 
   # check and resolve sector name or index
   if (is.character(sector_name) && length(sector_name) == 1 && !is.na(sector_name)) {
-    if (!sector_name %in% levels(gdp$sector)) {
+    if (!sector_name %in% levels(df$sector)) {
       stop("The specified sector does not exist.")
     }
     target_sector <- sector_name
   } else if (is.numeric(sector_name) && length(sector_name) == 1 &&
              is.finite(sector_name) && sector_name == floor(sector_name) &&
-             sector_name >= 1 && sector_name <= length(levels(gdp$sector))) {
-    target_sector <- levels(gdp$sector)[sector_name]
+             sector_name >= 1 && sector_name <= length(levels(df$sector))) {
+    target_sector <- levels(df$sector)[sector_name]
   } else {
     stop("sector_name must be a valid sector name or factor index.")
   }
@@ -35,7 +33,7 @@ getGrowth <- function(sector_name, startYear = NULL, endYear = NULL) {
   }
 
   # extract and sort sector data
-  sector_subset <- gdp[gdp$sector == target_sector, ]
+  sector_subset <- df[df$sector == target_sector, ]
   sector_subset <- sector_subset[order(sector_subset$quarter), ]
   sector_amount <- sector_subset$amount
   sector_quarter <- sector_subset$quarter
