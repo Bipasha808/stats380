@@ -64,3 +64,26 @@ getGrowth <- function(sector_name, startYear = NULL, endYear = NULL) {
   rownames(result_df) <- NULL
   return(result_df)
 }
+
+# check the GDP data format
+isGDPData <- function(df) {
+  if (!is.data.frame(df)) {
+    stop("Input must be a data frame.")
+  }
+
+  if (ncol(df) != 3 || !all(c("sector", "quarter", "amount") %in% names(df))) {
+    return(FALSE)
+  }
+  if (!is.factor(df$sector)) return(FALSE)
+  if (!is.factor(df$quarter) && !is.character(df$quarter)) return(FALSE)
+  if (!is.numeric(df$amount) || anyNA(df$amount) || any(!is.finite(df$amount))) {
+    return(FALSE)
+  }
+  if (anyNA(df$sector) || anyNA(df$quarter) || nrow(df) == 0) return(FALSE)
+
+  # check that quarters use the expected format
+  valid_quarters <- grepl("^[0-9]{4}Q[1-4]$", as.character(df$quarter))
+  if (!all(valid_quarters)) return(FALSE)
+
+  return(TRUE)
+}
