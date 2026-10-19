@@ -168,3 +168,53 @@ getGrowths <- function(sector_name, startYear = NULL, endYear = NULL, df = gdp) 
   rownames(result_df) <- NULL
   return(result_df)
 }
+
+# Plot quarterly and annual growth
+plotGrowths <- function(sector_name, startYear = NULL, endYear = NULL,
+                        df = gdp, col = c("lightblue", "red")) {
+  growths <- getGrowths(sector_name, startYear, endYear, df)
+
+  if (length(col) != 2) {
+    stop("col must contain two colours")
+  }
+
+  n <- nrow(growths)
+  x <- seq_len(n)
+
+  # Find the first quarter of each year
+  years <- as.integer(substr(as.character(growths$quarter), 1, 4))
+  year_positions <- which(!duplicated(years))
+
+  # Set up the plot
+  plot.new()
+  plot.window(xlim = c(0.5, n + 0.5), ylim = c(-20, 20))
+
+  # Draw horizontal reference lines
+  for (y in seq(-20, 20, by = 5)) {
+    abline(h = y, col = "grey80", lty = 2)
+  }
+
+  # Draw quarterly growth bars
+  rect(x - 0.4, 0, x + 0.4, growths$quarterlyRate,
+       col = col[1], border = col[1])
+
+  # Draw annual growth curve
+  lines(x, growths$annualRate, col = col[2], lwd = 2)
+
+  # Add axes and labels
+  axis(1, at = year_positions, labels = years[year_positions])
+  axis(2)
+  box()
+  title(main = paste("GDP Growth:", sector_name),
+        xlab = "Year", ylab = "Growth (%)")
+
+  # Add legend
+  legend("topright",
+         legend = c("Quarterly growth", "Annual growth"),
+         fill = c(col[1], NA),
+         border = c(col[1], NA),
+         lty = c(NA, 1),
+         col = c(col[1], col[2]),
+         lwd = c(NA, 2),
+         bty = "n")
+}
